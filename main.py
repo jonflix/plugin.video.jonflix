@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 # Module: default
-# Author: Roman V. M.
-# Created on: 28.11.2014
+# Author: JonFlix Mgmt 
+# Created on: 28.10.2016
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 
 import sys
@@ -28,13 +28,12 @@ _handle = int(sys.argv[1])
 my_addon = xbmcaddon.Addon()
 #my_addon.setSetting('access_key', '')
 
-
 def fetch_data(path):
 
-   url = 'http://france.jonstones.com/api/info.json?'+path
+   url = 'http://france.jonstones.com/aapi/info.json?'+path
  
    access_key = my_addon.getSetting('access_key')
-   data='{"Animals": [{"name": "Crab", "thumb": "http://www.vidsplay.com/vids/crab.jpg", "video": "http://www.vidsplay.com/vids/crab.mp4", "genre": "Animals"}]}'
+   data=''
    try:
        response = urllib2.urlopen(url)
        # everything is fine
@@ -45,34 +44,7 @@ def fetch_data(path):
        elif hasattr(e, 'code'):
            xbmcgui.Dialog().ok('JonFlix', url, e.code)
    else:
-      #xbmcgui.Dialog().ok('JonFlix', 'end:', data)
       return data
-
-
-def get_categories():
-    """
-    Get the list of video categories.
-    Here you can insert some parsing code that retrieves
-    the list of video categories (e.g. 'Movies', 'TV-shows', 'Documentaries' etc.)
-    from some site or server.
-
-    :return: list
-    """
-    VIDEOS=fetch_data('category=all')
-    return VIDEOS.keys()
-
-
-def get_videos(category):
-    """
-    Get the list of videofiles/streams.
-    Here you can insert some parsing code that retrieves
-    the list of videostreams in a given category from some site or server.
-
-    :param category: str
-    :return: list
-    """
-    VIDEOS=fetch_data('category='+category)
-    return VIDEOS[category]
 
 
 def list_categories():
@@ -80,8 +52,10 @@ def list_categories():
     Create the list of video categories in the Kodi interface.
     """
     # Get video categories
-    categories = get_categories()
-    VIDEOS=fetch_data('folderimgdata')
+    VIDEOS=fetch_data('category=all')
+    if not VIDEOS:
+       return
+    categories = VIDEOS.keys() 
     # Create a list for our items.
     listing = []
     # Iterate through categories
@@ -131,7 +105,10 @@ def list_videos(category):
     :param category: str
     """
     # Get the list of videos in the category.
-    videos = get_videos(category)
+    VIDEOS=fetch_data('category='+category)
+    if not VIDEOS:
+       return
+    videos=VIDEOS[category]
     # Create a list for our items.
     listing = []
     # Iterate through videos.
@@ -171,30 +148,16 @@ def list_videos(category):
 
 
 def play_video(path):
-    """
-    Play a video by the provided path.
-
-    :param path: str
-    """
-    # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=path)
-    # Pass the item to the Kodi player.
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
 
 def router(paramstring):
-    """
-    Router function that calls other functions
-    depending on the provided paramstring
-
-    :param paramstring:
-    """
     # Parse a URL-encoded paramstring to the dictionary of
     # {<parameter>: <value>} elements
     params = dict(parse_qsl(paramstring))
     # Check the parameters passed to the plugin
     if params:
-        fetch_data(paramstring)
         if params['action'] == 'listing':
             # Display the list of videos in a provided category.
             list_videos(params['category'])
@@ -204,7 +167,6 @@ def router(paramstring):
     else:
         # If the plugin is called from Kodi UI without any parameters,
         # display the list of video categories
-        fetch_data('action=listing')
         list_categories()
 
 
