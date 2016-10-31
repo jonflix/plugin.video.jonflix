@@ -31,7 +31,7 @@ my_addon = xbmcaddon.Addon()
 
 def fetch_data(path):
 
-   url = 'http://france.jonstones.com/aapi/info.json?'+path
+   url = 'http://france.jonstones.com/api/info.json?'+path
  
    access_key = my_addon.getSetting('access_key')
    data='{"Animals": [{"name": "Crab", "thumb": "http://www.vidsplay.com/vids/crab.jpg", "video": "http://www.vidsplay.com/vids/crab.mp4", "genre": "Animals"}]}'
@@ -41,13 +41,11 @@ def fetch_data(path):
        data = json.loads(response.read())
    except URLError as e:
        if hasattr(e, 'reason'):
-           print 'We failed to reach a server.'
-           print 'Reason: ', e.reason
+           xbmcgui.Dialog().ok('JonFlix', url, e.reason)
        elif hasattr(e, 'code'):
-           print 'The server couldn\'t fulfill the request.'
-           print 'Error code: ', e.code
+           xbmcgui.Dialog().ok('JonFlix', url, e.code)
    else:
-      #xbmcgui.Dialog().ok('JonFlix', 'FAILED:', e.cod)
+      #xbmcgui.Dialog().ok('JonFlix', 'end:', data)
       return data
 
 
